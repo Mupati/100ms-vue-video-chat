@@ -8,6 +8,8 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@100mslive/hms-video": "^0.1.39",
+    "@100mslive/hms-video-store": "^0.2.85",
     "core-js": "^3.6.5",
     "vue": "^3.0.0"
   },
