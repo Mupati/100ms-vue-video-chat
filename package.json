@@ -10,9 +10,11 @@
     "@100mslive/hms-video": "^0.1.39",
     "@100mslive/hms-video-store": "^0.2.85",
     "@tailwindcss/forms": "^0.4.0",
+    "netlify-cli": "^8.6.12",
     "vue": "^3.2.25"
   },
   "devDependencies": {
+    "@types/ua-parser-js": "^0.7.36",
     "@vitejs/plugin-vue": "^2.0.0",
     "autoprefixer": "^10.4.1",
     "postcss": "^8.4.5",

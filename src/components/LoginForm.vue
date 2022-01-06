@@ -27,7 +27,7 @@
                 name="name"
                 type="text"
                 autocomplete="username"
-                required=""
+                required
                 class="
                   appearance-none
                   block
@@ -56,7 +56,7 @@
                 id="room"
                 name="room"
                 type="text"
-                required=""
+                required
                 class="
                   appearance-none
                   block
