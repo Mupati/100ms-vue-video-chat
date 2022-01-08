@@ -1,4 +1,17 @@
 <script setup lang="ts">
+import { reactive } from "vue";
+import { joinRoom } from "../hms";
+
+const defaultRoomName = import.meta.env.VITE_APP_DEFAULT_ROOM;
+const formData = reactive({
+  name: "",
+  room: `${defaultRoomName}`,
+});
+
+const joinHmsRoom = async () => {
+  const res = await joinRoom(formData.name, formData.room);
+  console.log(res);
+};
 </script>
 
 <template>
@@ -16,7 +29,7 @@
 
     <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
       <div class="bg-white py-10 px-5 shadow sm:rounded-lg sm:px-10">
-        <form class="space-y-6" action="#" method="POST">
+        <form class="space-y-6" @submit.prevent="joinHmsRoom">
           <div>
             <label for="name" class="block text-sm font-2xl text-gray-700">
               Name
@@ -28,6 +41,7 @@
                 type="text"
                 autocomplete="username"
                 required
+                v-model="formData.name"
                 class="
                   appearance-none
                   block
@@ -57,6 +71,8 @@
                 name="room"
                 type="text"
                 required
+                disabled
+                v-model="formData.room"
                 class="
                   appearance-none
                   block
@@ -71,6 +87,7 @@
                   focus:ring-indigo-500
                   focus:border-indigo-500
                   sm:text-sm
+                  disabled
                 "
               />
             </div>
@@ -79,6 +96,7 @@
           <div>
             <button
               type="submit"
+              :disabled="formData.name === ''"
               class="
                 w-full
                 flex

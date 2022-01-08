@@ -8,3 +8,6 @@ todo.txt
 
 # Local Netlify folder
 .netlify
+hms-functions/*/vendor
+.env
+hms-functions/.env
