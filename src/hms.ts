@@ -1,29 +1,52 @@
-// import {
-//   HMSReactiveStore,
-//   selectIsConnectedToRoom,
-//   selectIsLocalAudioEnabled,
-//   selectIsLocalVideoEnabled,
-//   selectPeers,
-// } from "@100mslive/hms-video-store";
+import axios from "axios";
+import { HMSReactiveStore } from "@100mslive/hms-video-store";
+import { HmsTokenRes } from "./types";
 
-// const hmsManager = new HMSReactiveStore();
-// hmsManager.triggerOnSubscribe();
-// const hmsStore = hmsManager.getStore();
-// const hmsActions = hmsManager.getHMSActions();
+const FUNCTION_BASE_URL = "/.netlify/functions";
+const hmsManager = new HMSReactiveStore();
+hmsManager.triggerOnSubscribe();
 
-export const joinRoom = async (name: string, room: string) => {
-  const res = await fetch("/.netlify/functions/createRoom", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ name, room }),
-  });
+export const hmsActions = hmsManager.getHMSActions();
 
-  console.log(res?.json());
+export const fetchTokens = async (
+  name: string,
+  room: string
+): Promise<HmsTokenRes | any> => {
+  try {
+    // create or fetch the room_id
+    const roomRes = await axios.post(
+      `${FUNCTION_BASE_URL}/createRoom`,
+      { name, room },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
-  // hmsActions.join({
-  //   userName: name,
-  //   authToken: room,
-  // });
+    const { data } = roomRes;
+
+    // Generate the app/authToken
+    const tokenRes = await axios.post(
+      `${FUNCTION_BASE_URL}/generateAppToken`,
+      {
+        user_id: data.user,
+        room_id: data.id,
+        role: "",
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    return {
+      user_id: data.user,
+      room_id: data.id,
+      authToken: tokenRes.data,
+    };
+  } catch (error) {
+    return error;
+  }
 };

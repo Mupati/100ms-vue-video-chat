@@ -1,16 +1,24 @@
 <script setup lang="ts">
-import { reactive } from "vue";
-import { joinRoom } from "../hms";
+import { reactive, ref } from "vue";
+import { fetchTokens, hmsActions } from "../hms";
 
 const defaultRoomName = import.meta.env.VITE_APP_DEFAULT_ROOM;
+const isLoading = ref(false);
 const formData = reactive({
   name: "",
   room: `${defaultRoomName}`,
 });
 
 const joinHmsRoom = async () => {
-  const res = await joinRoom(formData.name, formData.room);
+  isLoading.value = true;
+  const res = await fetchTokens(formData.name, formData.room);
   console.log(res);
+  isLoading.value = false;
+
+  hmsActions.join({
+    userName: formData.name,
+    authToken: res.authToken,
+  });
 };
 </script>
 
@@ -87,7 +95,7 @@ const joinHmsRoom = async () => {
                   focus:ring-indigo-500
                   focus:border-indigo-500
                   sm:text-sm
-                  disabled
+                  disabled:cursor-not-allowed
                 "
               />
             </div>
@@ -96,7 +104,8 @@ const joinHmsRoom = async () => {
           <div>
             <button
               type="submit"
-              :disabled="formData.name === ''"
+              :disabled="formData.name === '' || isLoading"
+              :class="{ 'cursor-not-allowed': isLoading }"
               class="
                 w-full
                 flex
@@ -117,7 +126,29 @@ const joinHmsRoom = async () => {
                 focus:ring-indigo-500
               "
             >
-              Join
+              <svg
+                class="animate-spin mr-3 h-5 w-5 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                v-if="isLoading"
+              >
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                ></circle>
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+
+              {{ isLoading ? "Joining..." : "Join" }}
             </button>
           </div>
         </form>

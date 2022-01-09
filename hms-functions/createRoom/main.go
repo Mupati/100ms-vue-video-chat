@@ -68,12 +68,9 @@ func handler(ctx context.Context, request events.APIGatewayProxyRequest) (*event
 		}, errors.New("Provide name and room in the request body")
 	}
 
-	room := f.Room
-	username := f.Username
-
-	postBody, _ := json.Marshal(map[string]string{
-		"name":        strings.ToLower(room),
-		"description": "This is a secret room created by " + username,
+	postBody, _ := json.Marshal(map[string]interface{}{
+		"name":        strings.ToLower(f.Room),
+		"description": "This is a secret room created by " + f.Username,
 		"active":      true,
 	})
 	payload := bytes.NewBuffer(postBody)
