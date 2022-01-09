@@ -45,7 +45,7 @@ func handler(ctx context.Context, request events.APIGatewayProxyRequest) (*event
 		"version":    2,
 		"room_id":    f.RoomId,
 		"user_id":    f.UserId,
-		"role":       "",
+		"role":       f.Role,
 		"jti":        uuid.New().String(),
 		"iat":        now,
 		"exp":        exp,
@@ -53,10 +53,18 @@ func handler(ctx context.Context, request events.APIGatewayProxyRequest) (*event
 	})
 
 	// Sign and get the complete encoded token as a string using the secret
-	signedToken, _ := token.SignedString(mySigningKey)
+	signedToken, err := token.SignedString(mySigningKey)
+
+	if err != nil {
+		return &events.APIGatewayProxyResponse{
+			StatusCode: http.StatusInternalServerError,
+			Headers:    map[string]string{"Content-Type": "application/json"},
+			Body:       "Internal server error",
+		}, err
+	}
 
 	return &events.APIGatewayProxyResponse{
-		StatusCode:      200,
+		StatusCode:      http.StatusOK,
 		Headers:         map[string]string{"Content-Type": "application/json"},
 		Body:            signedToken,
 		IsBase64Encoded: false,

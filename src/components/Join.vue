@@ -10,15 +10,19 @@ const formData = reactive({
 });
 
 const joinHmsRoom = async () => {
-  isLoading.value = true;
-  const res = await fetchTokens(formData.name, formData.room);
-  console.log(res);
-  isLoading.value = false;
+  try {
+    isLoading.value = true;
+    const res = await fetchTokens(formData.name, formData.room);
 
-  hmsActions.join({
-    userName: formData.name,
-    authToken: res.authToken,
-  });
+    hmsActions.join({
+      userName: formData.name,
+      authToken: res.authToken,
+    });
+  } catch (error) {
+    alert(error);
+  }
+
+  isLoading.value = false;
 };
 </script>
 

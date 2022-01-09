@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import LoginForm from "./components/LoginForm.vue";
+import Join from "./components/Join.vue";
 </script>
 
 <template>
   <div class="px-auto pt-10">
-    <LoginForm />
+    <Join />
   </div>
 </template>
 

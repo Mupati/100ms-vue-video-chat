@@ -96,12 +96,13 @@ func handler(ctx context.Context, request events.APIGatewayProxyRequest) (*event
 	defer res.Body.Close()
 
 	resp, err := ioutil.ReadAll(res.Body)
+
 	if err != nil {
 		return handleInternalServerError(err.Error())
 	}
 
 	return &events.APIGatewayProxyResponse{
-		StatusCode:      http.StatusOK,
+		StatusCode:      res.StatusCode,
 		Headers:         map[string]string{"Content-Type": "application/json"},
 		Body:            string(resp),
 		IsBase64Encoded: false,

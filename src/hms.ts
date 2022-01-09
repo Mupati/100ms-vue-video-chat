@@ -32,7 +32,7 @@ export const fetchTokens = async (
       {
         user_id: data.user,
         room_id: data.id,
-        role: "",
+        role: "speaker",
       },
       {
         headers: {
@@ -46,7 +46,7 @@ export const fetchTokens = async (
       room_id: data.id,
       authToken: tokenRes.data,
     };
-  } catch (error) {
-    return error;
+  } catch (error: any) {
+    throw error;
   }
 };
