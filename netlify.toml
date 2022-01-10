@@ -1,10 +1,2 @@
 [functions]
   directory = "hms-functions/"
-[build]
-  command = "make build"
-  functions = "hms-functions/"
-  publish = "dist"
-[build.environment]
-  # Change this path with the path to your repository
-  GO_VERSION = "1.15"
-  GO_IMPORT_PATH = "https://github.com/Mupati/100ms-vue-video-chat"
