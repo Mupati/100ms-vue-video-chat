@@ -1,3 +1,5 @@
+[functions]
+  directory = "hms-functions/"
 [build]
   command = "make build"
   functions = "hms-functions/"
