@@ -4,8 +4,8 @@ import { HmsTokenRes } from "./types";
 
 const FUNCTION_BASE_URL = "/.netlify/functions";
 const hmsManager = new HMSReactiveStore();
-hmsManager.triggerOnSubscribe();
 
+export const hmsStore = hmsManager.getStore();
 export const hmsActions = hmsManager.getHMSActions();
 
 export const fetchTokens = async (
@@ -32,7 +32,7 @@ export const fetchTokens = async (
       {
         user_id: data.user,
         room_id: data.id,
-        role: "speaker",
+        role: "publisher",
       },
       {
         headers: {

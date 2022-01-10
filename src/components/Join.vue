@@ -17,6 +17,9 @@ const joinHmsRoom = async () => {
     hmsActions.join({
       userName: formData.name,
       authToken: res.authToken,
+      settings: {
+        isAudioMuted: true,
+      },
     });
   } catch (error) {
     alert(error);
