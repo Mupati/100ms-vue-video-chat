@@ -32,7 +32,7 @@ export const fetchTokens = async (
       {
         user_id: data.user,
         room_id: data.id,
-        role: "publisher",
+        role: "host",
       },
       {
         headers: {

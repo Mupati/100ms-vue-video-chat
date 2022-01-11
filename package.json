@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "@100mslive/hms-video": "^0.1.40",
-    "@100mslive/hms-video-store": "^0.2.86",
+    "@100mslive/hms-video-store": "^0.2.87-alpha.4",
     "@tailwindcss/forms": "^0.4.0",
     "axios": "^0.24.0",
     "vue": "^3.2.25"
