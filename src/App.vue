@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { selectIsConnectedToRoom } from "@100mslive/hms-video-store";
+import { selectRoomStarted } from "@100mslive/hms-video-store";
 import { hmsStore } from "./hms";
 import Join from "./components/Join.vue";
 import Conference from "./components/Conference.vue";
@@ -10,7 +10,7 @@ const onConnection = (connectionState: boolean | undefined) => {
   isConnected.value = Boolean(connectionState);
 };
 
-hmsStore.subscribe(onConnection, selectIsConnectedToRoom);
+hmsStore.subscribe(onConnection, selectRoomStarted);
 </script>
 
 <template>

@@ -10,7 +10,7 @@ import {
 import { hmsStore, hmsActions } from "../hms";
 
 onUnmounted(() => {
-  leaveMeeting();
+  if (allPeers.value.length) leaveMeeting();
 });
 
 const leaveMeeting = () => {
@@ -20,16 +20,22 @@ const leaveMeeting = () => {
 const isAudioEnabled = ref(hmsStore.getState(selectIsLocalAudioEnabled));
 const isVideoEnabled = ref(hmsStore.getState(selectIsLocalVideoEnabled));
 
+const onAudioChange = (newAudioState: boolean) => {
+  isAudioEnabled.value = newAudioState;
+};
+const onVideoChange = (newVideoState: boolean) => {
+  isVideoEnabled.value = newVideoState;
+};
+
 const toggleAudio = async () => {
   const enabled = hmsStore.getState(selectIsLocalAudioEnabled);
-  isAudioEnabled.value = enabled;
   await hmsActions.setLocalAudioEnabled(!enabled);
 };
 
 const toggleVideo = async () => {
   const enabled = hmsStore.getState(selectIsLocalVideoEnabled);
-  isVideoEnabled.value = Boolean(enabled);
   await hmsActions.setLocalVideoEnabled(!enabled);
+  renderPeers(hmsStore.getState(selectPeers));
 };
 
 const videoRefs: any = reactive({});
@@ -43,11 +49,15 @@ function renderPeers(peers: HMSPeer[]) {
     }
   });
 }
+
+// HMS Listeners
 hmsStore.subscribe(renderPeers, selectPeers);
+hmsStore.subscribe(onAudioChange, selectIsLocalAudioEnabled);
+hmsStore.subscribe(onVideoChange, selectIsLocalVideoEnabled);
 </script>
 
 <template>
-  <main class="mx-10">
+  <main class="mx-10 min-h-[80vh]">
     <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-3 my-6">
       <div v-for="peer in allPeers" :key="peer.id" class="relative">
         <video
@@ -77,21 +87,30 @@ hmsStore.subscribe(renderPeers, selectPeers);
         >
           {{ peer.isLocal ? "You" : peer.name }}
         </p>
+        <p
+          class="text-white text-center absolute top-1/2 right-0 left-0"
+          v-if="!isVideoEnabled"
+        >
+          Camera Off
+        </p>
       </div>
     </div>
 
-    <div class="mx-auto mt-10 flex items-center justify-center">
+    <div
+      class="mx-auto mt-10 flex items-center justify-center"
+      v-if="allPeers.length"
+    >
       <button
         class="bg-teal-800 text-white rounded-md p-3 block"
         @click="toggleAudio"
       >
-        {{ !isAudioEnabled ? "Mute" : "Unmute" }} Microphone
+        {{ isAudioEnabled ? "Mute" : "Unmute" }} Microphone
       </button>
       <button
         class="bg-indigo-400 text-white rounded-md p-3 block mx-5"
         @click="toggleVideo"
       >
-        {{ !isVideoEnabled ? "Mute" : "Unmute" }} Camera
+        {{ isVideoEnabled ? "Mute" : "Unmute" }} Camera
       </button>
       <button
         class="bg-rose-800 text-white rounded-md p-3 block"
@@ -99,6 +118,11 @@ hmsStore.subscribe(renderPeers, selectPeers);
       >
         Leave Meeting
       </button>
+    </div>
+    <div v-else>
+      <p class="text-white text-center font-bold text-2xl">
+        Hold On!, Loading Video Tiles...
+      </p>
     </div>
   </main>
 </template>
