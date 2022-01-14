@@ -6,8 +6,20 @@ import {
   HMSTrackID,
   selectIsLocalAudioEnabled,
   selectIsLocalVideoEnabled,
+  selectIsPeerAudioEnabled,
+  selectIsPeerVideoEnabled,
 } from "@100mslive/hms-video-store";
 import { hmsStore, hmsActions } from "../hms";
+
+const videoRefs: any = reactive({});
+const allPeers = ref<HMSPeer[]>([]);
+const isAudioEnabled = ref(hmsStore.getState(selectIsLocalAudioEnabled));
+const isVideoEnabled = ref(hmsStore.getState(selectIsLocalVideoEnabled));
+
+enum MediaState {
+  isAudioEnabled = "isAudioEnabled",
+  isVideoEnabled = "isVideoEnabled",
+}
 
 onUnmounted(() => {
   if (allPeers.value.length) leaveMeeting();
@@ -17,14 +29,39 @@ const leaveMeeting = () => {
   hmsActions.leave();
 };
 
-const isAudioEnabled = ref(hmsStore.getState(selectIsLocalAudioEnabled));
-const isVideoEnabled = ref(hmsStore.getState(selectIsLocalVideoEnabled));
-
 const onAudioChange = (newAudioState: boolean) => {
   isAudioEnabled.value = newAudioState;
 };
 const onVideoChange = (newVideoState: boolean) => {
   isVideoEnabled.value = newVideoState;
+};
+
+const onPeerAudioChange = (isEnabled: boolean, peerId: string) => {
+  videoRefs[peerId][MediaState.isAudioEnabled] = isEnabled;
+};
+const onPeerVideoChange = (isEnabled: boolean, peerId: string) => {
+  videoRefs[peerId][MediaState.isVideoEnabled] = isEnabled;
+};
+
+const renderPeers = (peers: HMSPeer[]) => {
+  allPeers.value = peers;
+  peers.forEach((peer: HMSPeer) => {
+    if (videoRefs[peer.id]) {
+      hmsActions.attachVideo(peer.videoTrack as HMSTrackID, videoRefs[peer.id]);
+
+      // If the peer is a remote peer, attach a listener to get video and audio states
+      if (!peer.isLocal) {
+        hmsStore.subscribe(
+          (isEnabled) => onPeerAudioChange(isEnabled, peer.id),
+          selectIsPeerAudioEnabled(peer.id)
+        );
+        hmsStore.subscribe(
+          (isEnabled) => onPeerVideoChange(isEnabled, peer.id),
+          selectIsPeerVideoEnabled(peer.id)
+        );
+      }
+    }
+  });
 };
 
 const toggleAudio = async () => {
@@ -37,18 +74,6 @@ const toggleVideo = async () => {
   await hmsActions.setLocalVideoEnabled(!enabled);
   renderPeers(hmsStore.getState(selectPeers));
 };
-
-const videoRefs: any = reactive({});
-const allPeers = ref<HMSPeer[]>([]);
-
-function renderPeers(peers: HMSPeer[]) {
-  allPeers.value = peers;
-  peers.forEach((peer: HMSPeer) => {
-    if (videoRefs[peer.id]) {
-      hmsActions.attachVideo(peer.videoTrack as HMSTrackID, videoRefs[peer.id]);
-    }
-  });
-}
 
 // HMS Listeners
 hmsStore.subscribe(renderPeers, selectPeers);
@@ -73,6 +98,9 @@ hmsStore.subscribe(onVideoChange, selectIsLocalVideoEnabled);
         ></video>
         <p
           class="
+            flex
+            justify-center
+            items-center
             py-1
             px-2
             text-sm
@@ -85,11 +113,65 @@ hmsStore.subscribe(onVideoChange, selectIsLocalVideoEnabled);
             left-0
           "
         >
-          {{ peer.isLocal ? "You" : peer.name }}
+          <span
+            class="inline-block w-6"
+            v-show="
+              (peer.isLocal && isAudioEnabled) ||
+              (!peer.isLocal && videoRefs[peer.id]?.[MediaState.isAudioEnabled])
+            "
+          >
+            <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+              <path
+                stroke="#FFF"
+                fill="#FFF"
+                d="m23 14v3a7 7 0 0 1 -14 0v-3h-2v3a9 9 0 0 0 8 8.94v2.06h-4v2h10v-2h-4v-2.06a9 9 0 0 0 8-8.94v-3z"
+              />
+              <path
+                stroke="#FFF"
+                fill="#FFF"
+                d="m16 22a5 5 0 0 0 5-5v-10a5 5 0 0 0 -10 0v10a5 5 0 0 0 5 5z"
+              />
+              <path d="m0 0h32v32h-32z" fill="none" />
+            </svg>
+          </span>
+          <span
+            class="inline-block w-6"
+            v-show="
+              (peer.isLocal && !isAudioEnabled) ||
+              (!peer.isLocal &&
+                !videoRefs[peer.id]?.[MediaState.isAudioEnabled])
+            "
+          >
+            <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+              <path
+                fill="#FFF"
+                d="m23 17a7 7 0 0 1 -11.73 5.14l1.42-1.41a5 5 0 0 0 8.31-3.73v-4.58l9-9-1.41-1.42-26.59 26.59 1.41 1.41 6.44-6.44a8.91 8.91 0 0 0 5.15 2.38v2.06h-4v2h10v-2h-4v-2.06a9 9 0 0 0 8-8.94v-3h-2z"
+              />
+              <path
+                fill="#FFF"
+                d="m9 17.32c0-.11 0-.21 0-.32v-3h-2v3a9 9 0 0 0 .25 2.09z"
+              />
+              <path fill="#FFF" d="m20.76 5.58a5 5 0 0 0 -9.76 1.42v8.34z" />
+              <path d="m0 0h32v32h-32z" fill="none" />
+            </svg>
+          </span>
+          <span class="inline-block">
+            {{ peer.isLocal ? "You" : peer.name }}</span
+          >
         </p>
+
         <p
           class="text-white text-center absolute top-1/2 right-0 left-0"
-          v-if="!isVideoEnabled"
+          v-show="peer.isLocal && !isVideoEnabled"
+        >
+          Camera Off
+        </p>
+
+        <p
+          class="text-white text-center absolute top-1/2 right-0 left-0"
+          v-show="
+            !peer.isLocal && !videoRefs[peer.id]?.[MediaState.isVideoEnabled]
+          "
         >
           Camera Off
         </p>
