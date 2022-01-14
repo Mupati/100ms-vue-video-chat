@@ -6,7 +6,7 @@ const FUNCTION_BASE_URL = "/.netlify/functions";
 const hmsManager = new HMSReactiveStore();
 
 export const hmsStore = hmsManager.getStore();
-export const hmsActions = hmsManager.getHMSActions();
+export const hmsActions = hmsManager.getActions();
 
 export const fetchTokens = async (
   name: string,
