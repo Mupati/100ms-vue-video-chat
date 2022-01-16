@@ -12,6 +12,7 @@ import {
 import { hmsStore, hmsActions } from "../hms";
 
 const videoRefs: any = reactive({});
+const remotePeerProps: any = reactive({});
 const allPeers = ref<HMSPeer[]>([]);
 const isAudioEnabled = ref(hmsStore.getState(selectIsLocalAudioEnabled));
 const isVideoEnabled = ref(hmsStore.getState(selectIsLocalVideoEnabled));
@@ -37,10 +38,14 @@ const onVideoChange = (newVideoState: boolean) => {
 };
 
 const onPeerAudioChange = (isEnabled: boolean, peerId: string) => {
-  videoRefs[peerId][MediaState.isAudioEnabled] = isEnabled;
+  if (videoRefs[peerId]) {
+    remotePeerProps[peerId][MediaState.isAudioEnabled] = isEnabled;
+  }
 };
 const onPeerVideoChange = (isEnabled: boolean, peerId: string) => {
-  videoRefs[peerId][MediaState.isVideoEnabled] = isEnabled;
+  if (videoRefs[peerId]) {
+    remotePeerProps[peerId][MediaState.isVideoEnabled] = isEnabled;
+  }
 };
 
 const renderPeers = (peers: HMSPeer[]) => {
@@ -51,6 +56,18 @@ const renderPeers = (peers: HMSPeer[]) => {
 
       // If the peer is a remote peer, attach a listener to get video and audio states
       if (!peer.isLocal) {
+        // Set up a property to track the audio and video states of remote peer so that
+        if (!remotePeerProps[peer.id]) {
+          remotePeerProps[peer.id] = {};
+        }
+        remotePeerProps[peer.id][MediaState.isAudioEnabled] = hmsStore.getState(
+          selectIsPeerAudioEnabled(peer.id)
+        );
+        remotePeerProps[peer.id][MediaState.isVideoEnabled] = hmsStore.getState(
+          selectIsPeerVideoEnabled(peer.id)
+        );
+
+        // Subscribe to the audio and video changes of the remote peer
         hmsStore.subscribe(
           (isEnabled) => onPeerAudioChange(isEnabled, peer.id),
           selectIsPeerAudioEnabled(peer.id)
@@ -72,6 +89,7 @@ const toggleAudio = async () => {
 const toggleVideo = async () => {
   const enabled = hmsStore.getState(selectIsLocalVideoEnabled);
   await hmsActions.setLocalVideoEnabled(!enabled);
+  // rendering again is required for the local video to show after turning off
   renderPeers(hmsStore.getState(selectPeers));
 };
 
@@ -117,7 +135,8 @@ hmsStore.subscribe(onVideoChange, selectIsLocalVideoEnabled);
             class="inline-block w-6"
             v-show="
               (peer.isLocal && isAudioEnabled) ||
-              (!peer.isLocal && videoRefs[peer.id]?.[MediaState.isAudioEnabled])
+              (!peer.isLocal &&
+                remotePeerProps?.[peer.id]?.[MediaState.isAudioEnabled])
             "
           >
             <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
@@ -139,7 +158,7 @@ hmsStore.subscribe(onVideoChange, selectIsLocalVideoEnabled);
             v-show="
               (peer.isLocal && !isAudioEnabled) ||
               (!peer.isLocal &&
-                !videoRefs[peer.id]?.[MediaState.isAudioEnabled])
+                !remotePeerProps?.[peer.id]?.[MediaState.isAudioEnabled])
             "
           >
             <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
@@ -156,21 +175,16 @@ hmsStore.subscribe(onVideoChange, selectIsLocalVideoEnabled);
             </svg>
           </span>
           <span class="inline-block">
-            {{ peer.isLocal ? "You" : peer.name }}</span
+            {{ peer.isLocal ? `You (${peer.name})` : peer.name }}</span
           >
         </p>
 
         <p
           class="text-white text-center absolute top-1/2 right-0 left-0"
-          v-show="peer.isLocal && !isVideoEnabled"
-        >
-          Camera Off
-        </p>
-
-        <p
-          class="text-white text-center absolute top-1/2 right-0 left-0"
           v-show="
-            !peer.isLocal && !videoRefs[peer.id]?.[MediaState.isVideoEnabled]
+            (peer.isLocal && !isVideoEnabled) ||
+            (!peer.isLocal &&
+              !remotePeerProps?.[peer.id]?.[MediaState.isVideoEnabled])
           "
         >
           Camera Off
