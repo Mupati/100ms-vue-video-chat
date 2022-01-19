@@ -29,7 +29,7 @@ func handler(ctx context.Context, request events.APIGatewayProxyRequest) (*event
 	if err1 != nil {
 		return &events.APIGatewayProxyResponse{
 			StatusCode: http.StatusUnprocessableEntity,
-		}, errors.New("Provide user_id and room_id in the request body")
+		}, errors.New("Provide user_id, room_id and room in the request body")
 	}
 
 	appAccessKey := os.Getenv("APP_ACCESS_KEY")

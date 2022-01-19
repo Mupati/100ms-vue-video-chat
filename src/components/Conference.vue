@@ -222,6 +222,3 @@ hmsStore.subscribe(onVideoChange, selectIsLocalVideoEnabled);
     </div>
   </main>
 </template>
-
-<style scoped>
-</style>

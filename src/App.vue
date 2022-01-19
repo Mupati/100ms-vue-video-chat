@@ -29,6 +29,3 @@ hmsStore.subscribe(onConnection, selectRoomStarted);
     <Join v-else />
   </div>
 </template>
-
-<style>
-</style>

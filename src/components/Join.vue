@@ -145,9 +145,4 @@ const joinHmsRoom = async () => {
       </form>
     </div>
   </div>
-  <!-- </div> -->
 </template>
-
-
-<style scoped>
-</style>
