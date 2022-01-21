@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { reactive, ref } from "vue";
-import { fetchTokens, hmsActions } from "../hms";
+import { fetchToken, hmsActions } from "../hms";
 
 const defaultRoomName = import.meta.env.VITE_APP_DEFAULT_ROOM;
 const isLoading = ref(false);
@@ -12,11 +12,11 @@ const formData = reactive({
 const joinHmsRoom = async () => {
   try {
     isLoading.value = true;
-    const res = await fetchTokens(formData.name, formData.room);
+    const authToken = await fetchToken(formData.name, formData.room);
 
     hmsActions.join({
       userName: formData.name,
-      authToken: res.authToken,
+      authToken: authToken,
       settings: {
         isAudioMuted: true, // Join with audio muted
       },

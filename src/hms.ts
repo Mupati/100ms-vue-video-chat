@@ -1,22 +1,24 @@
 import axios from "axios";
 import { HMSReactiveStore } from "@100mslive/hms-video-store";
-import { HmsTokenRes } from "./types";
+import { HmsTokenResponse } from "./types";
 
 const FUNCTION_BASE_URL = "/.netlify/functions";
 const hmsManager = new HMSReactiveStore();
 
+// store will be used to get any state of the room
+// actions will be used to perform an action in the room
 export const hmsStore = hmsManager.getStore();
 export const hmsActions = hmsManager.getActions();
 
-export const fetchTokens = async (
-  name: string,
-  room: string
-): Promise<HmsTokenRes | any> => {
+export const fetchToken = async (
+  userName: string,
+  roomName: string
+): Promise<HmsTokenResponse | any> => {
   try {
-    // create or fetch the room_id
-    const roomRes = await axios.post(
+    // create or fetch the room_id for the passed in room
+    const { data: room } = await axios.post(
       `${FUNCTION_BASE_URL}/createRoom`,
-      { name, room },
+      { room: roomName },
       {
         headers: {
           "Content-Type": "application/json",
@@ -24,14 +26,12 @@ export const fetchTokens = async (
       }
     );
 
-    const { data } = roomRes;
-
     // Generate the app/authToken
-    const tokenRes = await axios.post(
+    const { data: token } = await axios.post(
       `${FUNCTION_BASE_URL}/generateAppToken`,
       {
-        user_id: data.user,
-        room_id: data.id,
+        user_id: userName,
+        room_id: room.id,
         role: "host",
       },
       {
@@ -41,11 +41,7 @@ export const fetchTokens = async (
       }
     );
 
-    return {
-      user_id: data.user,
-      room_id: data.id,
-      authToken: tokenRes.data,
-    };
+    return token;
   } catch (error: any) {
     throw error;
   }
